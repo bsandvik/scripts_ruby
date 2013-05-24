@@ -5,7 +5,7 @@ def interactive
   $stdout.isatty
 end
 
-def intputs(str)
+def interactive_puts(str)
   # only puts if ran interactively
   if interactive
     puts str
@@ -21,15 +21,21 @@ class String
     self.length >= minlength
   end
   def has_required_letters(letters)
+    # this one isn't in use but the idea is that "helo" would return true for the word "hello" since all
+    # letters are present. However, there doesn't seem to be much gain from running this check before is_a_solution
     !!(self =~ /^[#{letters}]+$/)
   end
   def is_a_solution(letters)
+    # traverse each letter in the word (self)
     self.each_char do |c|
+      # ... and try to write the word by pulling letters from your "hand"
+      # this is done by deleting the letter from the string (replacing letter with "" using string substitution)
       remain = letters.sub(/#{c}/,"")
       if letters == remain then
         # if there are no required letters left, look for a wild (.)
         remain = letters.sub(/\./,"")
         if letters == remain then
+          # if there are no wilds either to satisfy this letter, we know this is not a match
           return false
         end
       end
@@ -48,29 +54,32 @@ class AllWords
     @letters = letters
   end
   def list_words 
-    intputs "Using dictionary #{dict}"
+    interactive_puts "Using dictionary #{dict}"
     f = File.open(dict, "r:UTF-8") or die "Unable to open file..."
     words = f.readlines
     f.close
     matching = Array.new
-    intputs "Looking for words with #{minlength} or more letters"
-    intputs "That can be written using #{letters}"
-    words.each do |word| 
+    interactive_puts "Looking for words with #{minlength} or more letters"
+    interactive_puts "That can be written using #{letters}"
+    words.each do |word|
       newword = word.chomp
+      # traverse dictionary and get rid of newline at the end of each word 
       if newword.is_long_enough(minlength) then
-         if newword.is_a_solution(letters) then
-           matching.push(newword)
-         end
+        # don't bother with solution check if word isn't long enough
+        if newword.is_a_solution(letters) then
+          matching.push(newword)
+        end
       end
     end
-    if matching.nil?
-      puts "No solutions"
-      return false
-    elsif matching.length > -1
-      intputs "There are #{matching.length} possibilities"
+    if matching.length > -1
+      interactive_puts "There are #{matching.length} possibilities"
       matching.each do |word|
         puts word
       end
+      return true
+    else
+      interactive_puts "No matches"
+      return false
     end
   end # list_words method
 end # AllWords class
